@@ -14,60 +14,18 @@ osxapp=$osxdir/love.app
 
 useCacheIfPossible=true
 
-hasW32=false
-if [ -e $w32app ]
-then
-  hasW32=true
-fi
-hasW64=false
-if [ -e $w64app ]
-then
-  hasW64=true
-fi
-hasOSX=false
-if [ -e $osxapp ]
-then
-  hasOSX=true
-fi
-
-while getopts ":hb:" optchar;
-do
-  case "$optchar" in
-    # -)
-    #   case "${OPTARG}" in
-    #     bustcache)
-    #       useCacheIfPossible=false
-    #       OPTIND=${OPTIND}
-    #       ;;
-    #     help)
-    #       echo "Usage: $0 [-b|--bustcache] [-h|--help]"
-    #       OPTIND=${OPTIND}
-    #       exit 2
-    #       ;;
-    #   esac;;
-    b)
-      useCacheIfPossible=false
-      OPTIND=${OPTIND}
-      ;;
-    h)
-      echo "Usage: $0 [-b|--bustcache] [-h|--help]"
-      OPTIND=${OPTIND}
-      exit 2
-      ;;
-  esac
-done
-
-shift $(($OPTIND - 1))
-
-echo "Input: $1"
-echo "Target: $2"
-
-if [ $useCacheIfPossible = false ]
-then
-  hasW32=false
-  hasW64=false
-  hasOSX=false
-fi
+function helpMessage() {
+  echo ""
+  echo "Usage: $0 [-bh] input target"
+  echo ""
+  echo "It is assumed that input will be a directory that already exists. If it doesn't, this will fail."
+  echo "Target may be a directory that does not yet exist. If it doesn't, it will be created. Otherwise, it will be cleaned before use."
+  echo ""
+  echo "Options:"
+  echo "  -b      Bust cache: Force download of executables again."
+  echo "  -h      Help; this message."
+  echo ""
+}
 
 function dlto() {
   local file=$1
@@ -76,35 +34,154 @@ function dlto() {
   local udir="${name%.*}"
 
   if [ -d $targ ]
-  then
+    then
     rm -rf $targ
   fi
 
   curl -fsSL $file -o $targ/$name --create-dirs
   if [ -f $targ/$name ]
-  then
+    then
     unzip -qq $targ/$name -d $targ/
     rm $targ/$name
     # Not applicable for OSX, so make sure to only extract Windows files to parent folders
     if [ -d $targ/$udir ]
-    then
+      then
       mv $targ/$udir/* $targ/
       rm -rf $targ/$udir
     fi
   fi
 }
 
+function createWindowsEXE() {
+  exeDir=$1
+  loveFile=$2
+  bits=$3
+
+  if [ -d YourGame_$bits ]
+    then
+    rm -rf YourGame_$bits
+  fi
+  mkdir YourGame_$bits
+  cat $exeDir/love.exe $loveFile > YourGame_$bits/YourGame.exe
+  cp $exeDir/DevIL.dll YourGame_$bits/DevIL.dll
+  cp $exeDir/license.txt YourGame_$bits/license.txt
+  cp $exeDir/love.dll YourGame_$bits/love.dll
+  cp $exeDir/lua51.dll YourGame_$bits/lua51.dll
+  cp $exeDir/mpg123.dll YourGame_$bits/mpg123.dll
+  cp $exeDir/msvcp110.dll YourGame_$bits/msvcp110.dll
+  cp $exeDir/msvcr110.dll YourGame_$bits/msvcr110.dll
+  cp $exeDir/OpenAL32.dll YourGame_$bits/OpenAL32.dll
+  cp $exeDir/SDL2.dll YourGame_$bits/SDL2.dll
+
+  zip -9 -q -r YourGame_$bits YourGame_$bits
+  rm -rf YourGame_$bits
+}
+
+# Flag existence of necessary executables
+hasW32=false
+if [ -e $w32app ]
+  then
+  hasW32=true
+fi
+hasW64=false
+if [ -e $w64app ]
+  then
+  hasW64=true
+fi
+hasOSX=false
+if [ -e $osxapp ]
+  then
+  hasOSX=true
+fi
+
+# Parse options
+while getopts "hb" optchar;
+  do
+  case "$optchar" in
+    b)
+      useCacheIfPossible=false
+      ;;
+    h)
+      helpMessage
+      exit 2
+      ;;
+  esac
+done
+
+n=1
+while [ $# -gt 0 ]
+  do
+  if [ $n -lt $OPTIND ]
+    then
+    let n=$n+1
+    shift
+  else
+    break;
+  fi
+done
+
+# Reset flags if using bust cache option
+if [ $useCacheIfPossible = false ]
+  then
+  hasW32=false
+  hasW64=false
+  hasOSX=false
+fi
+
+tmpinput=$1
+tmptarget=$2
+
+# Ensure necessary input and target
+if [ -z $tmpinput ] || [ -z $tmptarget ]
+  then
+  helpMessage
+  exit 1
+fi
+
+if [ ! -d $tmpinput ]
+  then
+  echo ""
+  echo "Please make sure that the input directory you passed exists."
+  echo ""
+  exit 1
+fi
+
+input="${tmpinput%/*}"
+target="${tmptarget%/*}"
+
+# Executable downloading
 if [ $hasW32 = false ]
-then
+  then
   dlto $w32bit $w32dir
 fi
 
 if [ $hasW64 = false ]
-then
+  then
   dlto $w64bit $w64dir
 fi
 
 if [ $hasOSX = false ]
-then
+  then
   dlto $osx $osxdir
 fi
+
+# Clean $input/bin/ if needed
+if [ -d $input/bin ]
+  then
+  rm -rf $input/bin
+fi
+mkdir $input/bin
+
+# Create .love
+lastDir=$(pwd)
+cd $input
+zip -9 -q -r ./bin/YourGame.love .
+cd $lastDir
+
+# Create executables using .love created
+#cat love.exe SuperGame.love > SuperGame.exe
+lastDir=$(pwd)
+cd $input/bin
+createWindowsEXE $w32dir YourGame.love 32
+createWindowsEXE $w64dir YourGame.love 64
+cd $lastDir
