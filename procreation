@@ -19,10 +19,12 @@ ident="com.$title"
 
 function helpMessage() {
   echo ""
-  echo "Usage: $0 [-bhtn] input target"
+  echo "Usage: $0 [-bh] [-t <title>] [-n <identifier>] input target"
   echo ""
   echo "It is assumed that input will be a directory that already exists. If it doesn't, this will fail."
   echo "Target may be a directory that does not yet exist. If it doesn't, it will be created. Otherwise, it will be cleaned before use."
+  echo ""
+  echo "Make sure your title and identifier are not null or empty strings if passed."
   echo ""
   echo "Options:"
   echo "  -b      Bust cache: Force download of executables again."
@@ -113,9 +115,19 @@ while getopts "bn:t:h" optchar;
       ;;
     t)
       title="${OPTARG}"
+      if [ -z $title ]
+        then
+        helpMessage
+        exit 1
+      fi
       ;;
     n)
       ident="${OPTARG}"
+      if [ -z $ident ]
+        then
+        helpMessage
+        exit 1
+      fi
       ;;
     h)
       helpMessage

@@ -11,11 +11,12 @@ curl -fsSL https://raw.github.com/sqow/procreation/master/procreation -o /usr/lo
 ## Usage
 
 ```sh
-procreation [-bhtn] input target
+procreation [-bh] [-t <title>] [-n <identifier>] input target
 ```
 
 - It is assumed that input will be a directory that already exists. If it doesn't, this will fail.
 - Target may be a directory that does not yet exist. If it doesn't, it will be created. Otherwise, it will be cleaned before use.
+- Make sure your title and identifier are not null or empty strings if passed.
 
 ### Options
 |   Flag    |   Description                                                         |
