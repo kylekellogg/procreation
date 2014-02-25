@@ -30,23 +30,21 @@ then
   hasOSX=true
 fi
 
-optspec="hb-"
-
-while getopts "$optspec" optchar;
+while getopts ":hb:" optchar;
 do
   case "$optchar" in
-    -)
-      case "${OPTARG}" in
-        bustcache)
-          useCacheIfPossible=false
-          OPTIND=${OPTIND}
-          ;;
-        help)
-          echo "Usage: $0 [-b|--bustcache] [-h|--help]"
-          OPTIND=${OPTIND}
-          exit 2
-          ;;
-      esac;;
+    # -)
+    #   case "${OPTARG}" in
+    #     bustcache)
+    #       useCacheIfPossible=false
+    #       OPTIND=${OPTIND}
+    #       ;;
+    #     help)
+    #       echo "Usage: $0 [-b|--bustcache] [-h|--help]"
+    #       OPTIND=${OPTIND}
+    #       exit 2
+    #       ;;
+    #   esac;;
     b)
       useCacheIfPossible=false
       OPTIND=${OPTIND}
@@ -56,16 +54,13 @@ do
       OPTIND=${OPTIND}
       exit 2
       ;;
-    :)
-      echo "$optchar"
-      OPTIND=${OPTIND}
-      ;;
   esac
 done
 
 shift $(($OPTIND - 1))
 
-echo "Target: $1"
+echo "Input: $1"
+echo "Target: $2"
 
 if [ $useCacheIfPossible = false ]
 then
