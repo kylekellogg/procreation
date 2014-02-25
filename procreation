@@ -194,25 +194,21 @@ if [ $hasOSX = false ]
 fi
 
 # Clean $input/bin/ if needed
-if [ -d $input/bin ]
+if [ -d $target ]
   then
-  rm -rf $input/bin
+  rm -rf $target
 fi
-mkdir $input/bin
+mkdir $target
 
 # Create .love
 lastDir=$(pwd)
 cd $input
-zip -9 -q -r ./bin/$title.love .
+zip -9 -q -r $target/$title.love .
 cd $lastDir
 
 # Create executables using .love created
 #cat love.exe SuperGame.love > SuperGame.exe
 lastDir=$(pwd)
-if [ ! -d $target ]
-  then
-  mkdir $target
-fi
 cd $target
 createWindowsEXE $w32dir $title.love $title 32
 createWindowsEXE $w64dir $title.love $title 64
