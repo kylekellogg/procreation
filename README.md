@@ -19,7 +19,7 @@ procreation [-bhtn] input target
 
 ### Options
 |   Flag    |   Description                                                         |
-|:---------:|:---------------------------------------------------------------------:|
+|:---------:|:----------------------------------------------------------------------|
 |   -b      |   Bust cache: Force download of executables again.                    |
 |   -h      |   Help; this message.                                                 |
 |   -t      |   Title of the game, for the executables.                             |
