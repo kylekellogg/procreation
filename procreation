@@ -85,7 +85,7 @@ function createWindowsEXE() {
   cp $exeDir/OpenAL32.dll $t/OpenAL32.dll
   cp $exeDir/SDL2.dll $t/SDL2.dll
 
-  zip -9 -q -r $t $t -x "/\*.git*" -x "/\*.DS_Store"
+  zip -9 -q -r $t $t -x "/\*.git*" -x "/\*.DS_Store" -x "\*.git*" -x "\*.DS_Store"
   rm -rf $t
 }
 
@@ -214,7 +214,7 @@ mkdir $target
 # Create .love
 lastDir=$(pwd)
 cd $input
-zip -9 -q -r $target/$title.love . -x "/\*.git*" -x "/\*.DS_Store"
+zip -9 -q -r $target/$title.love . -x "/\*.git*" -x "/\*.DS_Store" -x "\*.git*" -x "\*.DS_Store"
 cd $lastDir
 
 # Create executables using .love created
