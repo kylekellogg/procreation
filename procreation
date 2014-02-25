@@ -49,7 +49,7 @@ function dlto() {
   if [ -f $targ/$name ]
     then
     unzip -qq $targ/$name -d $targ/
-    rm $targ/$name
+    rm -rf $targ/$name
     # Not applicable for OSX, so make sure to only extract Windows files to parent folders
     if [ -d $targ/$udir ]
       then
@@ -85,7 +85,7 @@ function createWindowsEXE() {
   cp $exeDir/OpenAL32.dll $t/OpenAL32.dll
   cp $exeDir/SDL2.dll $t/SDL2.dll
 
-  zip -9 -q -r $t $t
+  zip -9 -q -r $t $t -x "/\*.git*" -x "/\*.DS_Store"
   rm -rf $t
 }
 
@@ -214,7 +214,7 @@ mkdir $target
 # Create .love
 lastDir=$(pwd)
 cd $input
-zip -9 -q -r $target/$title.love .
+zip -9 -q -r $target/$title.love . -x "/\*.git*" -x "/\*.DS_Store"
 cd $lastDir
 
 # Create executables using .love created
@@ -231,6 +231,7 @@ cp $title.app/Contents/Info.plist .
 # Only rename CFBundleName and CFBundleIdentifier
 sed "s~LÖVE<~$title<~" Info.plist > Info2.plist
 sed "s~org.love2d.love<~$ident<~" Info2.plist > $title.app/Contents/Info.plist
-rm Info.plist
-rm Info2.plist
+rm -rf Info.plist
+rm -rf Info2.plist
+chmod a+x $title.app
 cd $lastDir
