@@ -209,6 +209,10 @@ cd $lastDir
 # Create executables using .love created
 #cat love.exe SuperGame.love > SuperGame.exe
 lastDir=$(pwd)
+if [ ! -d $target ]
+  then
+  mkdir $target
+fi
 cd $target
 createWindowsEXE $w32dir $title.love $title 32
 createWindowsEXE $w64dir $title.love $title 64
