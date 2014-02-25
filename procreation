@@ -174,8 +174,19 @@ if [ ! -d $tmpinput ]
   exit 1
 fi
 
-input="${tmpinput%/*}"
-target="${tmptarget%/*}"
+if [ $(echo $tmpinput | grep \/$) ]
+  then
+  input="${tmpinput%/*}"
+else
+  input=$tmpinput
+fi
+
+if [ $(echo $tmptarget | grep \/$) ]
+  then
+  target="${tmptarget%/*}"
+else
+  target=$tmptarget
+fi
 
 # Executable downloading
 if [ $hasW32 = false ]
