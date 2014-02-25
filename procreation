@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+w32bit="https://bitbucket.org/rude/love/downloads/love-0.9.0-win32.zip"
+w64bit="https://bitbucket.org/rude/love/downloads/love-0.9.0-win64.zip"
+osx="https://bitbucket.org/rude/love/downloads/love-0.9.0-macosx-x64.zip"
+
+w32dir=$HOME/.procreation/w32
+w64dir=$HOME/.procreation/w64
+osxdir=$HOME/.procreation/osx
+
+w32app=$w32dir/love.exe
+w64app=$w64dir/love.exe
+osxapp=$osxdir/love.app
+
+useCacheIfPossible=true
+
+hasW32=false
+if [ -e $w32app ]
+then
+  hasW32=true
+fi
+hasW64=false
+if [ -e $w64app ]
+then
+  hasW64=true
+fi
+hasOSX=false
+if [ -e $osxapp ]
+then
+  hasOSX=true
+fi
+
+optspec=":hb-:"
+
+while getopts "$optspec" optchar;
+do
+  case "$optchar" in
+    -)
+      case "${OPTARG}" in
+        bustcache)
+          useCacheIfPossible=false
+          ;;
+        help)
+          echo "Usage: $0 [-b|--bustcache] [-h|--help]"
+          exit 2
+          ;;
+      esac;;
+    b)
+      useCacheIfPossible=false
+      ;;
+    h)
+      echo "Usage: $0 [-b|--bustcache] [-h|--help]"
+      exit 2
+      ;;
+  esac
+done
+
+targ=$1
+
+echo "Target: $targ"
+
+if [ $useCacheIfPossible = false ]
+then
+  hasW32=false
+  hasW64=false
+  hasOSX=false
+fi
+
+function dlto() {
+  local file=$1
+  local targ=$2
+  local name=$(basename $file)
+  local udir="${name%.*}"
+
+  if [ -d $targ ]
+  then
+    rm -rf $targ
+  fi
+
+  curl -fsSL $file -o $targ/$name --create-dirs
+  if [ -f $targ/$name ]
+  then
+    unzip -qq $targ/$name -d $targ/
+    rm $targ/$name
+    # Not applicable for OSX, so make sure to only extract Windows files to parent folders
+    if [ -d $targ/$udir ]
+    then
+      mv $targ/$udir/* $targ/
+      rm -rf $targ/$udir
+    fi
+  fi
+}
+
+if [ $hasW32 = false ]
+then
+  dlto $w32bit $w32dir
+fi
+
+if [ $hasW64 = false ]
+then
+  dlto $w64bit $w64dir
+fi
+
+if [ $hasOSX = false ]
+then
+  dlto $osx $osxdir
+fi
+
+# TODO: Figure out how to get target w/out having target be afflicted by getopts interference
