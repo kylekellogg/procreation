@@ -14,9 +14,12 @@ osxapp=$osxdir/love.app
 
 useCacheIfPossible=true
 
+title="YourGame"
+ident="com.$title"
+
 function helpMessage() {
   echo ""
-  echo "Usage: $0 [-bh] input target"
+  echo "Usage: $0 [-bhtn] input target"
   echo ""
   echo "It is assumed that input will be a directory that already exists. If it doesn't, this will fail."
   echo "Target may be a directory that does not yet exist. If it doesn't, it will be created. Otherwise, it will be cleaned before use."
@@ -24,6 +27,8 @@ function helpMessage() {
   echo "Options:"
   echo "  -b      Bust cache: Force download of executables again."
   echo "  -h      Help; this message."
+  echo "  -t      Title of the game, for the executables."
+  echo "  -n      Name for Mac Bundle Identifier, e.g. com.whatever.gamename"
   echo ""
 }
 
@@ -53,28 +58,33 @@ function dlto() {
 }
 
 function createWindowsEXE() {
-  exeDir=$1
-  loveFile=$2
-  bits=$3
+  local exeDir=$1
+  local loveFile=$2
+  local t=$3
+  local b=$4
+  local sep="_"
 
-  if [ -d YourGame_$bits ]
+  t=$t$sep
+  t=$t$b
+
+  if [ -d $t ]
     then
-    rm -rf YourGame_$bits
+    rm -rf $t
   fi
-  mkdir YourGame_$bits
-  cat $exeDir/love.exe $loveFile > YourGame_$bits/YourGame.exe
-  cp $exeDir/DevIL.dll YourGame_$bits/DevIL.dll
-  cp $exeDir/license.txt YourGame_$bits/license.txt
-  cp $exeDir/love.dll YourGame_$bits/love.dll
-  cp $exeDir/lua51.dll YourGame_$bits/lua51.dll
-  cp $exeDir/mpg123.dll YourGame_$bits/mpg123.dll
-  cp $exeDir/msvcp110.dll YourGame_$bits/msvcp110.dll
-  cp $exeDir/msvcr110.dll YourGame_$bits/msvcr110.dll
-  cp $exeDir/OpenAL32.dll YourGame_$bits/OpenAL32.dll
-  cp $exeDir/SDL2.dll YourGame_$bits/SDL2.dll
+  mkdir $t
+  cat $exeDir/love.exe $loveFile > $t/$title.exe
+  cp $exeDir/DevIL.dll $t/DevIL.dll
+  cp $exeDir/license.txt $t/license.txt
+  cp $exeDir/love.dll $t/love.dll
+  cp $exeDir/lua51.dll $t/lua51.dll
+  cp $exeDir/mpg123.dll $t/mpg123.dll
+  cp $exeDir/msvcp110.dll $t/msvcp110.dll
+  cp $exeDir/msvcr110.dll $t/msvcr110.dll
+  cp $exeDir/OpenAL32.dll $t/OpenAL32.dll
+  cp $exeDir/SDL2.dll $t/SDL2.dll
 
-  zip -9 -q -r YourGame_$bits YourGame_$bits
-  rm -rf YourGame_$bits
+  zip -9 -q -r $t $t
+  rm -rf $t
 }
 
 # Flag existence of necessary executables
@@ -95,11 +105,17 @@ if [ -e $osxapp ]
 fi
 
 # Parse options
-while getopts "hb" optchar;
+while getopts "bn:t:h" optchar;
   do
   case "$optchar" in
     b)
       useCacheIfPossible=false
+      ;;
+    t)
+      title="${OPTARG}"
+      ;;
+    n)
+      ident="${OPTARG}"
       ;;
     h)
       helpMessage
@@ -175,13 +191,23 @@ mkdir $input/bin
 # Create .love
 lastDir=$(pwd)
 cd $input
-zip -9 -q -r ./bin/YourGame.love .
+zip -9 -q -r ./bin/$title.love .
 cd $lastDir
 
 # Create executables using .love created
 #cat love.exe SuperGame.love > SuperGame.exe
 lastDir=$(pwd)
 cd $input/bin
-createWindowsEXE $w32dir YourGame.love 32
-createWindowsEXE $w64dir YourGame.love 64
+createWindowsEXE $w32dir $title.love $title 32
+createWindowsEXE $w64dir $title.love $title 64
+
+cp -r $osxapp .
+mv love.app $title.app
+cp $title.love $title.app/Contents/Resources/$title.love
+cp $title.app/Contents/Info.plist .
+# Only rename CFBundleName and CFBundleIdentifier
+sed "s~LÖVE<~$title<~" Info.plist > Info2.plist
+sed "s~org.love2d.love<~$ident<~" Info2.plist > $title.app/Contents/Info.plist
+rm Info.plist
+rm Info2.plist
 cd $lastDir
