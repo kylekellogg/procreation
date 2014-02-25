@@ -1,6 +1,6 @@
 # Procreation
 
-A helpful utility that will assist you in creating Löve2D executables for Windows (32-bit and 64-bit), Mac OSX, and a .love file for Linux.
+A helpful utility that will assist you in creating [LÖVE/Love2d](http://love2d.org/) executables for Windows (32-bit and 64-bit), Mac OSX, and a .love file for Linux.
 
 ## Installation
 
@@ -25,3 +25,8 @@ procreation [-bh] [-t <title>] [-n <identifier>] input target
 |   -h      |   Help; this message.                                                 |
 |   -t      |   Title of the game, for the executables.                             |
 |   -n      |   Name for Mac Bundle Identifier, e.g. com.whatever.gamename          |
+
+
+## Author
+
+This project was created and is maintained by [@kylekellogg](https://twitter.com/kylekellogg)
