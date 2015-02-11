@@ -37,24 +37,24 @@ function helpMessage() {
 function dlto() {
   local file=$1
   local targ=$2
-  local name=$(basename $file)
+  local name=$(basename "$file")
   local udir="${name%.*}"
 
-  if [ -d $targ ]
+  if [ -d "$targ" ]
     then
-    rm -rf $targ
+    rm -rf "$targ"
   fi
 
-  curl -fsSL $file -o $targ/$name --create-dirs
-  if [ -f $targ/$name ]
+  curl -fsSL "$file" -o "$targ/$name" --create-dirs
+  if [ -f "$targ/$name" ]
     then
-    unzip -qq $targ/$name -d $targ/
-    rm -rf $targ/$name
+    unzip -qq "$targ/$name" -d "$targ/"
+    rm -rf "${targ:?}/${name:?}"
     # Not applicable for OSX, so make sure to only extract Windows files to parent folders
-    if [ -d $targ/$udir ]
+    if [ -d "$targ/$udir" ]
       then
-      mv $targ/$udir/* $targ/
-      rm -rf $targ/$udir
+      mv "$targ/$udir/*" "$targ/"
+      rm -rf "${targ:?}/${udir:?}"
     fi
   fi
 }
@@ -69,39 +69,39 @@ function createWindowsEXE() {
   t=$t$sep
   t=$t$b
 
-  if [ -d $t ]
+  if [ -d "$t" ]
     then
-    rm -rf $t
+    rm -rf "$t"
   fi
-  mkdir $t
-  cat $exeDir/love.exe $loveFile > $t/$title.exe
-  cp $exeDir/DevIL.dll $t/DevIL.dll
-  cp $exeDir/license.txt $t/license.txt
-  cp $exeDir/love.dll $t/love.dll
-  cp $exeDir/lua51.dll $t/lua51.dll
-  cp $exeDir/mpg123.dll $t/mpg123.dll
-  cp $exeDir/msvcp110.dll $t/msvcp110.dll
-  cp $exeDir/msvcr110.dll $t/msvcr110.dll
-  cp $exeDir/OpenAL32.dll $t/OpenAL32.dll
-  cp $exeDir/SDL2.dll $t/SDL2.dll
+  mkdir "$t"
+  cat "$exeDir/love.exe" "$loveFile" > "$t/$title.exe"
+  cp "$exeDir/DevIL.dll" "$t/DevIL.dll"
+  cp "$exeDir/license.txt" "$t/license.txt"
+  cp "$exeDir/love.dll" "$t/love.dll"
+  cp "$exeDir/lua51.dll" "$t/lua51.dll"
+  cp "$exeDir/mpg123.dll" "$t/mpg123.dll"
+  cp "$exeDir/msvcp110.dll" "$t/msvcp110.dll"
+  cp "$exeDir/msvcr110.dll" "$t/msvcr110.dll"
+  cp "$exeDir/OpenAL32.dll" "$t/OpenAL32.dll"
+  cp "$exeDir/SDL2.dll" "$t/SDL2.dll"
 
-  zip -9 -q -r $t $t -x "*.git*" -x "*.DS_Store"
-  rm -rf $t
+  zip -9 -q -r "$t" "$t" -x "*.git*" -x "*.DS_Store"
+  rm -rf "$t"
 }
 
 # Flag existence of necessary executables
 hasW32=false
-if [ -e $w32app ]
+if [ -e "$w32app" ]
   then
   hasW32=true
 fi
 hasW64=false
-if [ -e $w64app ]
+if [ -e "$w64app" ]
   then
   hasW64=true
 fi
 hasOSX=false
-if [ -e $osxapp ]
+if [ -e "$osxapp" ]
   then
   hasOSX=true
 fi
@@ -115,7 +115,7 @@ while getopts "bn:t:h" optchar;
       ;;
     t)
       title="${OPTARG}"
-      if [ -z $title ]
+      if [ -z "$title" ]
         then
         helpMessage
         exit 1
@@ -123,7 +123,7 @@ while getopts "bn:t:h" optchar;
       ;;
     n)
       ident="${OPTARG}"
-      if [ -z $ident ]
+      if [ -z "$ident" ]
         then
         helpMessage
         exit 1
@@ -160,13 +160,13 @@ tmpinput=$1
 tmptarget=$2
 
 # Ensure necessary input and target
-if [ -z $tmpinput ] || [ -z $tmptarget ]
+if [ -z "$tmpinput" ] || [ -z "$tmptarget" ]
   then
   helpMessage
   exit 1
 fi
 
-if [ ! -d $tmpinput ]
+if [ ! -d "$tmpinput" ]
   then
   echo ""
   echo "Please make sure that the input directory you passed exists."
@@ -174,14 +174,14 @@ if [ ! -d $tmpinput ]
   exit 1
 fi
 
-if [ $(echo $tmpinput | grep \/$) ]
+if echo "$tmpinput" | grep '/$'
   then
   input="${tmpinput%/*}"
 else
   input=$tmpinput
 fi
 
-if [ $(echo $tmptarget | grep \/$) ]
+if echo "$tmptarget" | grep '/$'
   then
   target="${tmptarget%/*}"
 else
@@ -191,47 +191,47 @@ fi
 # Executable downloading
 if [ $hasW32 = false ]
   then
-  dlto $w32bit $w32dir
+  dlto $w32bit "$w32dir"
 fi
 
 if [ $hasW64 = false ]
   then
-  dlto $w64bit $w64dir
+  dlto $w64bit "$w64dir"
 fi
 
 if [ $hasOSX = false ]
   then
-  dlto $osx $osxdir
+  dlto $osx "$osxdir"
 fi
 
 # Clean $input/bin/ if needed
-if [ -d $target ]
+if [ -d "$target" ]
   then
-  rm -rf $target
+  rm -rf "$target"
 fi
-mkdir $target
+mkdir "$target"
 
 # Create .love
 lastDir=$(pwd)
-cd $input
-zip -9 -q -r $target/$title.love . -x "*.git*" -x "*.DS_Store"
-cd $lastDir
+cd "$input"
+zip -9 -q -r "$target/$title.love" . -x "*.git*" -x "*.DS_Store"
+cd "$lastDir"
 
 # Create executables using .love created
 #cat love.exe SuperGame.love > SuperGame.exe
 lastDir=$(pwd)
-cd $target
-createWindowsEXE $w32dir $title.love $title 32
-createWindowsEXE $w64dir $title.love $title 64
+cd "$target"
+createWindowsEXE "$w32dir" "$title.love" "$title" 32
+createWindowsEXE "$w64dir" "$title.love" "$title" 64
 
-cp -r $osxapp .
-mv love.app $title.app
-cp $title.love $title.app/Contents/Resources/$title.love
-cp $title.app/Contents/Info.plist .
+cp -r "$osxapp" .
+mv love.app "$title.app"
+cp "$title.love" "$title.app/Contents/Resources/$title.love"
+cp "$title.app/Contents/Info.plist" .
 # Only rename CFBundleName and CFBundleIdentifier
 sed "s~LÖVE<~$title<~" Info.plist > Info2.plist
-sed "s~org.love2d.love<~$ident<~" Info2.plist > $title.app/Contents/Info.plist
+sed "s~org.love2d.love<~$ident<~" Info2.plist > "$title.app/Contents/Info.plist"
 rm -rf Info.plist
 rm -rf Info2.plist
-chmod a+x $title.app
-cd $lastDir
+chmod a+x "$title.app"
+cd "$lastDir"
