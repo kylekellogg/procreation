@@ -1,5 +1,7 @@
 # Procreation
 
+**If you're thinking about using this tool, please give [love-release](https://github.com/MisterDA/love-release) a look as it may be more up to par with what you need**
+
 A helpful utility that will assist you in creating [LÖVE/Love2d](http://love2d.org/) executables for Windows (32-bit and 64-bit), Mac OSX, and a .love file for Linux.
 
 ## Installation
